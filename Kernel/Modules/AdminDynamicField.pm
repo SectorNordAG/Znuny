@@ -30,7 +30,6 @@ sub new {
 
 sub Run {
     my ( $Self, %Param ) = @_;
-
     if ( $Self->{Subaction} eq 'DynamicFieldDelete' ) {
 
         # challenge token check for write action
@@ -278,8 +277,14 @@ sub _DynamicFieldsListShow {
 
     # get personal page shown count
     my $PageShownPreferencesKey = 'AdminDynamicFieldsOverviewPageShown';
-    my $PageShown               = $Self->{$PageShownPreferencesKey} || 35;
     my $Group                   = 'DynamicFieldsOverviewPageShown';
+
+    my $PageShown = 35; # default value
+    if ( $Self->{Subaction} eq 'Search' ) {
+        $PageShown = 1000; #TODO: config
+        } elsif ($Self->{$PageShownPreferencesKey}) {
+        $PageShown = $Self->{$PageShownPreferencesKey};
+    }
 
     # get data selection
     my %Data;
@@ -346,6 +351,12 @@ sub _DynamicFieldsListShow {
                     ID => $DynamicFieldID,
                 );
                 next DYNAMICFIELDID if !IsHashRefWithData($DynamicFieldData);
+
+                if ( $Self->{Subaction} eq 'Search' ) {
+                    my $ParamObject  = $Kernel::OM->Get('Kernel::System::Web::Request');
+                    my $Search = $ParamObject->GetParam( Param => 'Search' );
+                    next DYNAMICFIELDID if ($DynamicFieldData->{Name} !~ /\Q$Search\E/i);
+                }
 
                 # convert ValidID to Validity string
                 my $Valid = $Kernel::OM->Get('Kernel::System::Valid')->ValidLookup(
