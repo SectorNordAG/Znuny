@@ -27,25 +27,23 @@
                         </div>
                     </li>
 [% RenderBlockEnd("ActionAddDynamicField") %]
-                        </ul>
-                    </div>
-                </div>
-
-                    <div class="WidgetSimple">
-                        <div class="Header">
-                            <h2><label for="FilterDynamicFields">[% Translate("Filter for Dynamic Fields") | html %]</label></h2>
-                        </div>
-                        <form class="SearchBox" action="[% Env("CGIHandle") %]" method="post">
-                            <i class="fa fa-search"></i>
-                            <input type="hidden" name="Action" value="[% Env("Action") %]"/>
-                            <input type="hidden" name="Subaction" value="Search"/>
-                            <input type="text" name="Search" value="[% Data.Search | html %]" id="Search" title="[% Translate("Search") | html %]"/>
-                        </form>
-                        <p class="FieldExplanation">
-                            [% Translate("Wildcards like '*' are allowed.") | html %]
-                        </p>
-                    </div>
-
+                </ul>
+            </div>
+        </div>
+        <div class="WidgetSimple">
+            <div class="Header">
+                <h2><label for="FilterDynamicFields">[% Translate("Filter for Dynamic Fields") | html %]</label></h2>
+            </div>
+            <form class="SearchBox" action="[% Env("CGIHandle") %]" method="post">
+                <i class="fa fa-search"></i>
+                <input type="hidden" name="Action" value="[% Env("Action") %]"/>
+                <input type="hidden" name="Subaction" value="Search"/>
+                <input type="text" name="Search" value="[% Data.Search | html %]" id="Search" title="[% Translate("Search") | html %]"/>
+            </form>
+            <p class="FieldExplanation">
+                [% Translate("Wildcards like '*' are allowed.") | html %]
+            </p>
+        </div>
 [% RenderBlockStart("Hint") %]
         <div class="WidgetSimple">
             <div class="Header">

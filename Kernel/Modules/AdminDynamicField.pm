@@ -282,8 +282,8 @@ sub _DynamicFieldsListShow {
     my $PageShown = 35; # default value
     if ( $Self->{Subaction} eq 'Search' ) {
         $PageShown = 1000; #TODO: config
-        } elsif ($Self->{$PageShownPreferencesKey}) {
-        $PageShown = $Self->{$PageShownPreferencesKey};
+    } elsif ($Self->{$PageShownPreferencesKey}) {
+            $PageShown = $Self->{$PageShownPreferencesKey};
     }
 
     # get data selection
