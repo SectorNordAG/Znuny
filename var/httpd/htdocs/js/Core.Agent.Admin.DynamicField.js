@@ -197,6 +197,23 @@ Core.Agent.Admin.DynamicField = (function (TargetNS) {
         });
     };
 
+    /**
+     * @name Init
+     * @memberof Core.Agent.Admin.DynamicField
+     * @function
+     * @description
+     *       Initialize module functionality
+     */
+    TargetNS.Init = function () {
+
+        // Initialize JS functions
+        TargetNS.ValidationInit();
+        TargetNS.DynamicFieldAddAction();
+        TargetNS.ShowContextSettingsDialog();
+        TargetNS.DynamicFieldDelete();
+
+    };
+
     Core.Init.RegisterNamespace(TargetNS, 'APP_MODULE');
 
     return TargetNS;
