@@ -114,7 +114,9 @@ sub _ShowOverview {
     my $LayoutObject       = $Kernel::OM->Get('Kernel::Output::HTML::Layout');
     my $ConfigObject       = $Kernel::OM->Get('Kernel::Config');
     my $DynamicFieldObject = $Kernel::OM->Get('Kernel::System::DynamicField');
+    my $ParamObject        = $Kernel::OM->Get('Kernel::System::Web::Request');
     my $FieldTypeConfig    = $ConfigObject->Get('DynamicFields::Driver');
+    my $Search             = $ParamObject->GetParam( Param => 'Search' ) || '';
 
     my $Output = $LayoutObject->Header();
     $Output .= $LayoutObject->NavigationBar();
@@ -248,6 +250,7 @@ sub _ShowOverview {
     # print the list of dynamic fields
     $Self->_DynamicFieldsListShow(
         DynamicFields => $DynamicFieldsList,
+        Search        => $Search,
         Total         => scalar @{$DynamicFieldsList},
     );
 
@@ -277,15 +280,16 @@ sub _DynamicFieldsListShow {
 
     # get personal page shown count
     my $PageShownPreferencesKey = 'AdminDynamicFieldsOverviewPageShown';
+    my $PageShown               = $Self->{$PageShownPreferencesKey} || 35;
     my $Group                   = 'DynamicFieldsOverviewPageShown';
 
-    my $PageShown = 35; # default value
-    if ( $Self->{Subaction} eq 'Search' ) {
-        $PageShown = 1000; #TODO: config
-    } elsif ($Self->{$PageShownPreferencesKey}) {
-            $PageShown = $Self->{$PageShownPreferencesKey};
-    }
+    # retrieve list of dynamic field IDs based on the search criteria
+    my @DynamicFields = $Self->{Subaction} eq 'Search' || $Param{Search} ne ''
+        ? $Self->_SearchDynamicField(DynamicFields => $Param{DynamicFields}, Search => $Param{Search})
+        : @{ $Param{DynamicFields} };
 
+    # limit amount of hits dependent on situation
+    my $AllHits = scalar @DynamicFields;
     # get data selection
     my %Data;
     my $Config = $ConfigObject->Get('PreferencesGroups');
@@ -305,9 +309,9 @@ sub _DynamicFieldsListShow {
         Limit     => $Limit,
         StartHit  => $StartHit,
         PageShown => $PageShown,
-        AllHits   => $Param{Total} || 0,
+        AllHits   => $AllHits || 0,
         Action    => 'Action=' . $LayoutObject->{Action},
-        Link      => $Param{LinkPage},
+        Link      => "Action=$Self->{Action};Search=$Param{Search};",
         IDPrefix  => $LayoutObject->{Action},
     );
 
@@ -343,7 +347,7 @@ sub _DynamicFieldsListShow {
         my $Counter = 0;
 
         DYNAMICFIELDID:
-        for my $DynamicFieldID ( @{ $Param{DynamicFields} } ) {
+        for my $DynamicFieldID ( @DynamicFields ) {
             $Counter++;
             if ( $Counter >= $StartHit && $Counter < ( $PageShown + $StartHit ) ) {
 
@@ -351,12 +355,6 @@ sub _DynamicFieldsListShow {
                     ID => $DynamicFieldID,
                 );
                 next DYNAMICFIELDID if !IsHashRefWithData($DynamicFieldData);
-
-                if ( $Self->{Subaction} eq 'Search' ) {
-                    my $ParamObject  = $Kernel::OM->Get('Kernel::System::Web::Request');
-                    my $Search = $ParamObject->GetParam( Param => 'Search' );
-                    next DYNAMICFIELDID if ($DynamicFieldData->{Name} !~ /\Q$Search\E/i);
-                }
 
                 # convert ValidID to Validity string
                 my $Valid = $Kernel::OM->Get('Kernel::System::Valid')->ValidLookup(
@@ -416,7 +414,7 @@ sub _DynamicFieldsListShow {
     $LayoutObject->Block(
         Name => 'MaxFieldOrder',
         Data => {
-            MaxFieldOrder => scalar @{ $Param{DynamicFields} },
+            MaxFieldOrder => scalar @DynamicFields,
         },
     );
 
@@ -442,6 +440,21 @@ sub _DynamicFieldOrderReset {
     return $LayoutObject->Redirect(
         OP => "Action=AdminDynamicField",
     );
+}
+
+sub _SearchDynamicField {
+    my ( $Self, %Param ) = @_;
+    my @DynamicFields;
+    for my $DynamicFieldID ( @{ $Param{DynamicFields} } ) {
+        my $DynamicFieldData = $Kernel::OM->Get('Kernel::System::DynamicField')->DynamicFieldGet(
+            ID => $DynamicFieldID,
+        ); 
+
+        if ($DynamicFieldData->{Name} =~ /\Q$Param{Search}\E/i){
+            push(@DynamicFields, $DynamicFieldID)
+        }
+    }
+    return @DynamicFields;
 }
 
 1;
