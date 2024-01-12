@@ -341,7 +341,7 @@ sub _DynamicFieldsListShow {
     }
 
     # check if at least 1 dynamic field is registered in the system
-    if ( $Param{Total} ) {
+    if ( $AllHits > 0 ) {
 
         # get dynamic fields details
         my $Counter = 0;
