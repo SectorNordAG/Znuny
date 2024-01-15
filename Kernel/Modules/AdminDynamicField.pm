@@ -243,15 +243,16 @@ sub _ShowOverview {
     );
 
     # get dynamic fields list
-    my $DynamicFieldsList = $DynamicFieldObject->DynamicFieldList(
+    my $DynamicFieldsHash = $DynamicFieldObject->DynamicFieldList(
         Valid => 0,
+        ResultType => 'HASH',
     );
 
     # print the list of dynamic fields
     $Self->_DynamicFieldsListShow(
-        DynamicFields => $DynamicFieldsList,
+        DynamicFields => $DynamicFieldsHash,
         Search        => $Search,
-        Total         => scalar @{$DynamicFieldsList},
+        Total         => scalar keys %{$DynamicFieldsHash},
     );
 
     $Output .= $LayoutObject->Output(
@@ -285,8 +286,8 @@ sub _DynamicFieldsListShow {
 
     # retrieve list of dynamic field IDs based on the search criteria
     my @DynamicFields = $Self->{Subaction} eq 'Search' || $Param{Search} ne ''
-        ? $Self->_SearchDynamicField(DynamicFields => $Param{DynamicFields}, Search => $Param{Search})
-        : @{ $Param{DynamicFields} };
+        ? grep {index($Param{DynamicFields}->{$_}, $Param{Search}) != -1} keys $Param{DynamicFields}
+        : keys $Param{DynamicFields};
 
     # limit amount of hits dependent on situation
     my $AllHits = scalar @DynamicFields;
@@ -440,21 +441,6 @@ sub _DynamicFieldOrderReset {
     return $LayoutObject->Redirect(
         OP => "Action=AdminDynamicField",
     );
-}
-
-sub _SearchDynamicField {
-    my ( $Self, %Param ) = @_;
-    my @DynamicFields;
-    for my $DynamicFieldID ( @{ $Param{DynamicFields} } ) {
-        my $DynamicFieldData = $Kernel::OM->Get('Kernel::System::DynamicField')->DynamicFieldGet(
-            ID => $DynamicFieldID,
-        ); 
-
-        if ($DynamicFieldData->{Name} =~ /\Q$Param{Search}\E/i){
-            push(@DynamicFields, $DynamicFieldID)
-        }
-    }
-    return @DynamicFields;
 }
 
 1;

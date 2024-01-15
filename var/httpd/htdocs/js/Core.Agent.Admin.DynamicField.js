@@ -212,6 +212,7 @@ Core.Agent.Admin.DynamicField = (function (TargetNS) {
         TargetNS.ShowContextSettingsDialog();
         TargetNS.DynamicFieldDelete();
 
+        Core.Config.Set('EntityType', 'DynamicField');
     };
 
     Core.Init.RegisterNamespace(TargetNS, 'APP_MODULE');
