@@ -243,16 +243,15 @@ sub _ShowOverview {
     );
 
     # get dynamic fields list
-    my $DynamicFieldsHash = $DynamicFieldObject->DynamicFieldList(
+    my $DynamicFieldsList = $DynamicFieldObject->DynamicFieldList(
         Valid => 0,
-        ResultType => 'HASH',
     );
 
     # print the list of dynamic fields
     $Self->_DynamicFieldsListShow(
-        DynamicFields => $DynamicFieldsHash,
+        DynamicFields => $DynamicFieldsList,
         Search        => $Search,
-        Total         => scalar keys %{$DynamicFieldsHash},
+        Total         => scalar @{$DynamicFieldsList},
     );
 
     $Output .= $LayoutObject->Output(
@@ -285,10 +284,13 @@ sub _DynamicFieldsListShow {
     my $Group                   = 'DynamicFieldsOverviewPageShown';
 
     # retrieve list of dynamic field IDs based on the search criteria
-    my @DynamicFields = keys $Param{DynamicFields};
+    my @DynamicFields = @{$Param{DynamicFields}};
     my $SearchLink;
-    if ($Self->{Subaction} eq 'Search' || $Param{Search} ne '') {
-        @DynamicFields = grep {index($Param{DynamicFields}->{$_}, $Param{Search}) != -1} keys $Param{DynamicFields};
+    if ($Self->{Subaction} eq 'Search' || !$Param{Search}) {
+        @DynamicFields = $Self->_SearchDynamicField(
+            DynamicFields => $Param{DynamicFields}, 
+            Search => $Param{Search},
+        );
         $SearchLink = "Search=$Param{Search};";
     }
 
@@ -444,6 +446,21 @@ sub _DynamicFieldOrderReset {
     return $LayoutObject->Redirect(
         OP => "Action=AdminDynamicField",
     );
+}
+
+sub _SearchDynamicField {
+    my ( $Self, %Param ) = @_;
+    my @DynamicFields;
+    for my $DynamicFieldID ( @{ $Param{DynamicFields} } ) {
+        my $DynamicFieldData = $Kernel::OM->Get('Kernel::System::DynamicField')->DynamicFieldGet(
+            ID => $DynamicFieldID,
+        ); 
+
+        if ($DynamicFieldData->{Name} =~ /\Q$Param{Search}\E/i){
+            push(@DynamicFields, $DynamicFieldID)
+        }
+    }
+    return @DynamicFields;
 }
 
 1;
