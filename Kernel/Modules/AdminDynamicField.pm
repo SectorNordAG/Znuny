@@ -285,9 +285,12 @@ sub _DynamicFieldsListShow {
     my $Group                   = 'DynamicFieldsOverviewPageShown';
 
     # retrieve list of dynamic field IDs based on the search criteria
-    my @DynamicFields = $Self->{Subaction} eq 'Search' || $Param{Search} ne ''
-        ? grep {index($Param{DynamicFields}->{$_}, $Param{Search}) != -1} keys $Param{DynamicFields}
-        : keys $Param{DynamicFields};
+    my @DynamicFields = keys $Param{DynamicFields};
+    my $SearchLink;
+    if ($Self->{Subaction} eq 'Search' || $Param{Search} ne '') {
+        @DynamicFields = grep {index($Param{DynamicFields}->{$_}, $Param{Search}) != -1} keys $Param{DynamicFields};
+        $SearchLink = "Search=$Param{Search};";
+    }
 
     # limit amount of hits dependent on situation
     my $AllHits = scalar @DynamicFields;
@@ -312,7 +315,7 @@ sub _DynamicFieldsListShow {
         PageShown => $PageShown,
         AllHits   => $AllHits || 0,
         Action    => 'Action=' . $LayoutObject->{Action},
-        Link      => "Action=$Self->{Action};Search=$Param{Search};",
+        Link      => $SearchLink,
         IDPrefix  => $LayoutObject->{Action},
     );
 
