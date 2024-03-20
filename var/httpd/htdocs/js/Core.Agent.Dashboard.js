@@ -197,6 +197,26 @@ Core.Agent.Dashboard = (function (TargetNS) {
                 var URL = Core.Config.Get('Baselink') + Core.AJAX.SerializeForm($Form),
                     InitContainer = Core.Config.Get('InitContainer' + ElementID),
                     ValidationErrors = false;
+                
+                // Disallow saving of config if mandatory fields are not present
+                var clickedElementId = $ClickedElement.attr("id");
+                var widgetName = clickedElementId.replace("_submit", "");
+                var AlwaysColumns = Core.Config.Get("AlwaysColumns###" + widgetName);
+                var availableFields = $('#AvailableField-' + widgetName);
+                var assignedFields = $('#AssignedFields-' + widgetName);
+                var missingColumns = [];
+
+                AlwaysColumns.forEach(function(column) {
+                    if (assignedFields.find('li[data-fieldname="' + column.trim() + '"]').length === 0) {
+                        var title = availableFields.find('li[data-fieldname="' + column.trim() + '"]').attr('title');
+                        missingColumns.push(title);  
+                    }
+                });
+
+                if (missingColumns.length > 0) {
+                    alert('Column(s) ' + missingColumns.join(', ') + ' is/are missing from the Visible Colums');
+                    return false;
+                }
 
                 // check for elements to validate
                 $ClickedElement.closest('fieldset').find('.StatsSettingsBox').find('.TimeRelativeUnitView').each(function() {

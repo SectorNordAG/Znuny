@@ -11,7 +11,7 @@ package Kernel::Output::HTML::Dashboard::TicketGeneric;
 
 use strict;
 use warnings;
-
+use Data::Dumper;
 use Kernel::System::VariableCheck qw(:all);
 use Kernel::Language qw(Translatable);
 
@@ -2340,6 +2340,7 @@ sub _SearchParamsGet {
     my %TicketSearch;
     my %DynamicFieldsParameters;
     my @Params = split /;/, $Self->{Config}->{Attributes};
+    my $LayoutObject = $Kernel::OM->Get('Kernel::Output::HTML::Layout');
 
     # read user preferences and config to get columns that
     # should be shown in the dashboard widget (the preferences
@@ -2396,7 +2397,14 @@ sub _SearchParamsGet {
         my @AlwaysColumns = (
             'DynamicField_' . $Self->{ProcessManagementProcessID},
             'DynamicField_' . $Self->{ProcessManagementActivityID},
+            'TicketNumber',
         );
+
+        $LayoutObject->AddJSData(
+            Key   => 'AlwaysColumns###Dashboard' . $Self->{Name},
+            Value => \@AlwaysColumns,
+        );
+
         my $Resort;
         for my $AlwaysColumn (@AlwaysColumns) {
             if ( !grep { $_ eq $AlwaysColumn } @Columns ) {
@@ -2407,6 +2415,15 @@ sub _SearchParamsGet {
         if ($Resort) {
             @Columns = sort { $Self->_DefaultColumnSort() } @Columns;
         }
+    }else {
+        my @AlwaysColumns = (
+            'TicketNumber',
+        );
+
+        $LayoutObject->AddJSData(
+            Key   => 'AlwaysColumns###Dashboard' . $Self->{Name},
+            Value => \@AlwaysColumns,
+        );
     }
 
     {
