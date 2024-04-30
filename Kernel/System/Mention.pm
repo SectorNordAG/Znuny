@@ -579,7 +579,7 @@ sub GetMentionedUserIDsFromString {
 
     my @MentionedUsers = (
         $Param{HTMLString}
-            =~ m{<a\b[^>]*?\bclass="Mention"[^>]*?>\Q$MentionsTriggerConfig->{User}\E(.*?)<\/a>}sg
+            =~ m{<a\b[^>]*?\bid="(.*?)"[^>]*?>\Q$MentionsTriggerConfig->{User}\E(.*?)<\/a>}sg
     );
 
     my @MentionedGroups = (
@@ -601,6 +601,12 @@ sub GetMentionedUserIDsFromString {
         && IsStringWithData($QuoteMarker)
         )
     {
+        # Create hash to link mentioned full names with their corresponding username
+        my %MentionedUserHash;
+        for (my $i = 0; $i < scalar @MentionedUsers; $i += 2) {
+            $MentionedUserHash{$MentionedUsers[$i]} = $MentionedUsers[$i + 1];
+        }
+
         # Remove every line that starts with a quote marker.
         ( my $PlainTextStringWithoutQuote = $Param{PlainTextString} ) =~ s{^\Q$QuoteMarker\E.*}{}mig;
 
@@ -615,6 +621,16 @@ sub GetMentionedUserIDsFromString {
             @MentionedGroups
                 = grep { $PlainTextStringWithoutQuote =~ m{\[\d+\]\Q$MentionsTriggerConfig->{Group}\E$_\b}m }
                 @MentionedGroups;
+        }
+
+        # Exchange fullnames with usernames
+        for my $User (@MentionedUsers) {
+            for my $Key (keys %MentionedUserHash) {
+                if ($MentionedUserHash{$Key} eq $User) {
+                    $User = $Key;
+                    last;
+                }
+            }
         }
     }
 
