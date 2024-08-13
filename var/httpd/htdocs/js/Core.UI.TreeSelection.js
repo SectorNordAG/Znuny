@@ -563,17 +563,22 @@ Core.UI.TreeSelection = (function (TargetNS) {
         });
 
         SelectData.sort(function(a, b) {
+            var keyA = a.Key.toLowerCase();
+            var keyB = b.Key.toLowerCase();
 
-            var KeyA = a.Key.toLowerCase(),
-                KeyB = b.Key.toLowerCase();
+            var partsA = keyA.split('::');
+            var partsB = keyB.split('::');
 
-            if (KeyA < KeyB) {
-               return -1;
+            for (var i = 0; i < Math.min(partsA.length, partsB.length); i++) {
+                if (partsA[i] < partsB[i]) {
+                    return -1;
+                }
+                if (partsA[i] > partsB[i]) {
+                    return 1;
+                }
             }
-            if (KeyA > KeyB) {
-               return 1;
-            }
-            return 0;
+        
+            return partsA.length - partsB.length;
         });
 
         $.each(SelectData, function(index, SelectedData) {
