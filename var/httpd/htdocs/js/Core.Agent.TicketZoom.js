@@ -625,7 +625,16 @@ Core.Agent.TicketZoom = (function (TargetNS) {
                     return false;
                 });
 
-                $('#' + ElementID).find('.WidgetSimple').hide().fadeIn();
+                //SECTOR NORD AG zt:
+                // Check if the widget has no content and hide it to remove unnecessary gaps between widgets
+                var $ElementID =  $('#' + ElementID)
+                if ($ElementID.text().trim() === '') {
+                    $ElementID.hide();
+                } else {
+                    $ElementID.show().find('.WidgetSimple').hide().fadeIn();
+                }
+                //--- /SECTOR NORD AG
+
                 Core.UI.InitWidgetActionToggle();
             });
         });
